@@ -8,7 +8,11 @@ import {
 
 import { logger } from '@genkit-ai/core/logging';
 import z from 'zod';
-import { Datapoint, vertexVectorSearchOptions } from './types';
+import {
+  Datapoint,
+  vertexVectorSearchOptions,
+  VVSIndexerOptionsSchema,
+} from './types';
 import { upsertDatapoints } from './upsert_datapoints';
 
 export const vertexAiIndexerRef = (params: {
@@ -40,13 +44,14 @@ export function vertexIndexers<EmbedderCustomOptions extends z.ZodTypeAny>(
     const indexer = defineIndexer(
       {
         name: `vertexai/${indexId}`,
-        configSchema: z.any(),
+        configSchema: VVSIndexerOptionsSchema,
       },
+      // TODO: fix custom options types
       async (docs, options) => {
         let docIds: string[] = [];
 
         try {
-          docIds = await documentIndexer(docs);
+          docIds = await documentIndexer(docs, options);
         } catch (error) {
           logger.error(
             `Error storing your document content/metadata: ${error}`

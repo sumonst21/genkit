@@ -61,7 +61,11 @@ import {
 import { imagen2, imagen2Model } from './imagen.js';
 import { vertexIndexers } from './vector-search/indexers.js';
 import { vertexRetrievers } from './vector-search/retrievers.js';
-import { Neighbor } from './vector-search/types.js';
+import {
+  Neighbor,
+  VVSIndexerOptionsSchema,
+  VVSRetrieverOptionsSchema,
+} from './vector-search/types.js';
 export {
   vertexAiIndexerRef,
   vertexAiRetrieverRef,
@@ -92,8 +96,14 @@ export {
 interface VectorSearchIndexOption<EmbedderCustomOptions extends z.ZodTypeAny> {
   deployedIndexId: string;
   indexEndpointId: string;
-  documentRetriever: (docIds: Neighbor[]) => Promise<Document[]>;
-  documentIndexer: (docs: Document[]) => Promise<string[]>;
+  documentRetriever: (
+    docIds: Neighbor[],
+    options?: z.infer<typeof VVSRetrieverOptionsSchema>
+  ) => Promise<Document[]>;
+  documentIndexer: (
+    docs: Document[],
+    options: z.infer<typeof VVSIndexerOptionsSchema>
+  ) => Promise<string[]>;
   publicEndpoint: string;
   indexId: string;
   embedder?: EmbedderArgument<EmbedderCustomOptions>;

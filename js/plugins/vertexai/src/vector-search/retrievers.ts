@@ -1,6 +1,5 @@
 import { embed } from '@genkit-ai/ai/embedder';
 import {
-  CommonRetrieverOptionsSchema,
   defineRetriever,
   RetrieverAction,
   retrieverRef,
@@ -8,12 +7,8 @@ import {
 import { logger } from '@genkit-ai/core/logging';
 import z from 'zod';
 import { queryPublicEndpoint } from './query_public_endpoint';
-import { vertexVectorSearchOptions } from './types';
+import { vertexVectorSearchOptions, VVSRetrieverOptionsSchema } from './types';
 import { getProjectNumber } from './utils';
-
-const VVSRetrieverOptionsSchema = CommonRetrieverOptionsSchema.extend(
-  {}
-).optional();
 
 const DEFAULT_K = 10;
 
@@ -36,7 +31,6 @@ export function vertexRetrievers<EmbedderCustomOptions extends z.ZodTypeAny>(
         configSchema: VVSRetrieverOptionsSchema,
       },
       async (content, options) => {
-        logger.info(`Starting embedding process for index: ${indexId}`);
         const queryEmbeddings = await embed({
           embedder,
           options: embedderOptions,
@@ -95,7 +89,7 @@ export function vertexRetrievers<EmbedderCustomOptions extends z.ZodTypeAny>(
             logger.warn('Some neighbors do not have datapoints');
           }
 
-          const documents = await documentRetriever(neighbors);
+          const documents = await documentRetriever(neighbors, options);
 
           logger.info(`Documents retrieved for index: ${indexId}`);
           return { documents };

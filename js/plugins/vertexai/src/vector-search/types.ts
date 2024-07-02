@@ -1,4 +1,5 @@
 import { EmbedderArgument } from '@genkit-ai/ai/embedder';
+import { CommonRetrieverOptionsSchema } from '@genkit-ai/ai/retriever';
 import * as aiplatform from '@google-cloud/aiplatform';
 import { GoogleAuth } from 'google-auth-library';
 import z from 'zod';
@@ -120,3 +121,9 @@ assertTypeEquality<IIndexDatapoint>({} as IndexDatapoint);
 assertTypeEquality<IFindNeighborsResponse>({} as FindNeighborsResponse);
 
 export { findNeighborsResponseSchema };
+
+export const VVSRetrieverOptionsSchema = CommonRetrieverOptionsSchema.extend(
+  {}
+).optional();
+
+export const VVSIndexerOptionsSchema = z.object({}).extend({}).optional();
