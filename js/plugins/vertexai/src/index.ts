@@ -59,20 +59,20 @@ import {
   SUPPORTED_GEMINI_MODELS,
 } from './gemini.js';
 import { imagen2, imagen2Model } from './imagen.js';
-import { vertexIndexers } from './vector-search/indexers.js';
-import { vertexRetrievers } from './vector-search/retrievers.js';
 import {
   Neighbor,
   VVSIndexerOptionsSchema,
   VVSRetrieverOptionsSchema,
-} from './vector-search/types.js';
+} from './vector-search';
+import { vertexIndexers } from './vector-search/indexers.js';
+import { vertexRetrievers } from './vector-search/retrievers.js';
+export { Neighbor } from './vector-search';
 export {
   vertexAiIndexerRef,
   vertexAiRetrieverRef,
   vertexIndexers,
   vertexRetrievers,
 } from './vector-search/index.js';
-export { Neighbor } from './vector-search/types.js';
 export {
   claude3Haiku,
   claude3Opus,

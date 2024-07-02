@@ -1,3 +1,4 @@
+// main.ts
 import {
   Document,
   DocumentDataSchema,
@@ -17,8 +18,20 @@ import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import * as z from 'zod';
 
+import {
+  DATASET_ID,
+  FIREBASE_COLLECTION,
+  LOCATION,
+  PROJECT_ID,
+  TABLE_ID,
+  VECTOR_SEARCH_DEPLOYED_INDEX_ID,
+  VECTOR_SEARCH_INDEX_ENDPOINT_ID,
+  VECTOR_SEARCH_INDEX_ID,
+  VECTOR_SEARCH_PUBLIC_ENDPOINT,
+} from './config';
+
 // Initialize Firebase app
-initializeApp({ projectId: 'fir-vector-invertase-03' });
+initializeApp({ projectId: PROJECT_ID });
 
 const db = getFirestore();
 
@@ -28,7 +41,7 @@ const firestoreClient = {
     const docs: Document[] = [];
     for (const neighbor of neighbors) {
       const docRef = db
-        .collection('documents')
+        .collection(FIREBASE_COLLECTION)
         .doc(neighbor.datapoint?.datapointId!);
       const docSnapshot = await docRef.get();
       if (docSnapshot.exists) {
@@ -45,7 +58,7 @@ const firestoreClient = {
     const batch = db.batch();
     const ids: string[] = [];
     docs.forEach((doc) => {
-      const docRef = db.collection('documents').doc();
+      const docRef = db.collection(FIREBASE_COLLECTION).doc();
       batch.set(docRef, { content: doc.content });
       ids.push(docRef.id);
     });
@@ -55,14 +68,13 @@ const firestoreClient = {
 };
 
 const bigQuery = new BigQuery({
-  projectId: 'fir-vector-invertase-03',
-  location: 'us-central1',
+  projectId: PROJECT_ID,
+  location: LOCATION,
 });
 
-const DATASET_ID = 'genkit_vertexai';
-const TABLE_ID = 'documents';
-
-const generateId = () => Math.random().toString(36).substring(2, 15);
+const generateId = () => {
+  return Math.random().toString(36).substring(2, 15);
+};
 
 // BigQuery client for document storage and retrieval
 const bigQueryClient = {
@@ -97,7 +109,7 @@ const bigQueryClient = {
     const rows = docs.map((doc) => {
       const id = generateId();
       ids.push(id);
-      return { id, content: doc.content };
+      return { id, content: JSON.stringify(doc.content) };
     });
     await bigQuery.dataset(DATASET_ID).table(TABLE_ID).insert(rows);
     return ids;
@@ -113,7 +125,7 @@ const multiClientDocStore = {
       case 'bigquery':
         return bigQueryClient.add(docs);
       default:
-        throw new Error('Invalid client, choose firestore or bigquery');
+        throw new Error('Invalid client, choose ONE of firestore or bigquery');
     }
   },
   get: async (neighbors: Neighbor[], options: any): Promise<Document[]> => {
@@ -142,18 +154,17 @@ const multiClientDocStore = {
 configureGenkit({
   plugins: [
     vertexAI({
-      projectId: 'fir-vector-invertase-03',
-      location: 'us-central1',
+      projectId: PROJECT_ID,
+      location: LOCATION,
       googleAuth: {
         scopes: ['https://www.googleapis.com/auth/cloud-platform'],
       },
       vectorSearchIndexOptions: [
         {
-          publicEndpoint:
-            'https://1394123153.us-central1-67051307990.vdb.vertexai.goog',
-          indexEndpointId: '2682724808889729024',
-          indexId: '3629325155567665152',
-          deployedIndexId: 'testt_1719838497234',
+          publicEndpoint: VECTOR_SEARCH_PUBLIC_ENDPOINT,
+          indexEndpointId: VECTOR_SEARCH_INDEX_ENDPOINT_ID,
+          indexId: VECTOR_SEARCH_INDEX_ID,
+          deployedIndexId: VECTOR_SEARCH_DEPLOYED_INDEX_ID,
           documentRetriever: multiClientDocStore.get,
           documentIndexer: multiClientDocStore.add,
         },
@@ -168,16 +179,20 @@ configureGenkit({
 export const indexFlow = defineFlow(
   {
     name: 'indexFlow',
-    inputSchema: z.array(z.string()),
+    inputSchema: z.object({
+      texts: z.array(z.string()),
+      target: z.enum(['firestore', 'bigquery']),
+    }),
     outputSchema: z.any(),
   },
-  async (texts) => {
+  async ({ texts, target }) => {
     const documents = texts.map((text) => Document.fromText(text));
     await index({
       indexer: vertexAiIndexerRef({
-        indexId: '3629325155567665152',
+        indexId: VECTOR_SEARCH_INDEX_ID,
         displayName: 'test_index',
       }),
+      options: { client: target },
       documents,
     });
     return { result: 'success' };
@@ -201,6 +216,7 @@ export const queryFlow = defineFlow(
           distance: z.number(),
         })
       ),
+      length: z.number(),
       time: z.number(),
     }),
   },
@@ -209,7 +225,7 @@ export const queryFlow = defineFlow(
     const queryDocument = Document.fromText(query);
     const res = await retrieve({
       retriever: vertexAiRetrieverRef({
-        indexId: '3629325155567665152',
+        indexId: VECTOR_SEARCH_INDEX_ID,
         displayName: 'test_index',
       }),
       query: queryDocument,
@@ -224,6 +240,7 @@ export const queryFlow = defineFlow(
           distance: doc.metadata?.distance,
         }))
         .sort((a, b) => b.distance - a.distance),
+      length: res.length,
       time: endTime - startTime,
     };
   }
