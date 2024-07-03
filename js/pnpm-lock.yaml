@@ -35,9 +35,9 @@ importers:
       node-fetch:
         specifier: ^3.3.2
         version: 3.3.2
-      untruncate-json:
-        specifier: ^0.0.1
-        version: 0.0.1
+      partial-json:
+        specifier: ^0.1.7
+        version: 0.1.7
       zod:
         specifier: ^3.22.4
         version: 3.22.4
@@ -4721,9 +4721,6 @@ packages:
     resolution: {integrity: sha512-pjy2bYhSsufwWlKwPc+l3cN7+wuJlK6uz0YdJEOlQDbl6jo/YlPi4mb8agUkVC8BF7V8NuzeyPNqRksA3hztKQ==}
     engines: {node: '>= 0.8'}
 
-  untruncate-json@0.0.1:
-    resolution: {integrity: sha512-4W9enDK4X1y1s2S/Rz7ysw6kDuMS3VmRjMFg7GZrNO+98OSe+x5Lh7PKYoVjy3lW/1wmhs6HW0lusnQRHgMarA==}
-
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
 
@@ -8750,8 +8747,6 @@ snapshots:
   undici-types@5.26.5: {}
 
   unpipe@1.0.0: {}
-
-  untruncate-json@0.0.1: {}
 
   uri-js@4.4.1:
     dependencies:
