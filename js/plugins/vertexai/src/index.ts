@@ -21,16 +21,16 @@ import {
   IndexerAction,
   RetrieverAction,
 } from '@genkit-ai/ai/retriever';
-import { Plugin, genkitPlugin } from '@genkit-ai/core';
+import { genkitPlugin, Plugin } from '@genkit-ai/core';
 import { VertexAI } from '@google-cloud/vertexai';
 import { GoogleAuth, GoogleAuthOptions } from 'google-auth-library';
 import z from 'zod';
 import {
-  SUPPORTED_ANTHROPIC_MODELS,
   anthropicModel,
   claude3Haiku,
   claude3Opus,
   claude3Sonnet,
+  SUPPORTED_ANTHROPIC_MODELS,
 } from './anthropic.js';
 import {
   SUPPORTED_EMBEDDER_MODELS,
@@ -49,7 +49,6 @@ import {
   vertexEvaluators,
 } from './evaluation.js';
 import {
-  SUPPORTED_GEMINI_MODELS,
   gemini15Flash,
   gemini15FlashPreview,
   gemini15Pro,
@@ -57,6 +56,7 @@ import {
   geminiModel,
   geminiPro,
   geminiProVision,
+  SUPPORTED_GEMINI_MODELS,
 } from './gemini.js';
 import { imagen2, imagen2Model } from './imagen.js';
 import {
@@ -93,19 +93,39 @@ export {
   textEmbeddingGeckoMultilingual001,
   textMultilingualEmbedding002,
 };
+
+/**
+ * A document retriever function that takes an array of Neighbors from Vertex AI Vector Search query result, and resolves to a list of documents.
+ * Also takes an options object that can be used to configure the retriever.
+ */
+export type DocumentRetriever = (
+  docIds: Neighbor[],
+  options?: z.infer<typeof VVSRetrieverOptionsSchema>
+) => Promise<Document[]>;
+
+/**
+ * Indexer function that takes an array of documents, stores them in a database of the user's choice, and resolves to a list of document ids.
+ * Also takes an options object that can be used to configure the indexer.
+ */
+export type DocumentIndexer = (
+  docs: Document[],
+  options?: z.infer<typeof VVSIndexerOptionsSchema>
+) => Promise<string[]>;
+
+/**
+ * Options for configuring the Vector Search Index. As in other plugins, the plugin can an array of options
+ * allowing an options object per index.
+ */
 interface VectorSearchIndexOption<EmbedderCustomOptions extends z.ZodTypeAny> {
+  // Specify the Vertex AI Index and IndexEndpoint to use for indexing and retrieval
   deployedIndexId: string;
   indexEndpointId: string;
-  documentRetriever: (
-    docIds: Neighbor[],
-    options?: z.infer<typeof VVSRetrieverOptionsSchema>
-  ) => Promise<Document[]>;
-  documentIndexer: (
-    docs: Document[],
-    options: z.infer<typeof VVSIndexerOptionsSchema>
-  ) => Promise<string[]>;
   publicEndpoint: string;
   indexId: string;
+  // Document retriever and indexer functions to use for indexing and retrieval by the plugin's own indexers and retrievers
+  documentRetriever: DocumentRetriever;
+  documentIndexer: DocumentIndexer;
+  // Embedder and default options to use for indexing and retrieval
   embedder?: EmbedderArgument<EmbedderCustomOptions>;
   embedderOptions?: z.infer<EmbedderCustomOptions>;
 }
