@@ -9,9 +9,9 @@
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.0.0",
-    "@trpc/server": "10.45.0",
+    "@trpc/server": "10.45.3",
     "adm-zip": "^0.5.12",
-    "axios": "^1.6.7",
+    "axios": "^1.15.2",
     "body-parser": "^1.20.2",
     "chokidar": "^3.5.3",
     "colorette": "^2.0.20",
@@ -26,9 +26,9 @@
     "open": "^6.3.0",
     "terminate": "^2.6.1",
     "tsx": "^4.9.3",
-    "uuid": "^9.0.1",
+    "uuid": "^14.0.0",
     "winston": "^3.11.0",
-    "yaml": "^2.4.1",
+    "yaml": "^2.8.3",
     "zod": "^3.22.4",
     "zod-to-json-schema": "^3.22.4"
   },
